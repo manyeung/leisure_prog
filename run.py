@@ -31,18 +31,18 @@ def create_ics(data):
 
     for d in data:
         date = d['ENROL_START_DATE']
-        date = datetime.datetime.strptime(date+'+0800', '%Y-%m-%d %H:%M:%S%z')
-        date = date.replace(hour=8, minute=30)
+        date = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
 
         e = Event()
         e.name = ' | '.join(
             [d['PGM_CODE'],
-             d['TC_PGM_NAME'],
+             d['TC_VENUE'],
              d['TC_DAY'],
              d['PGM_START_TIME']])
         e.description = sprint_data(d)
         e.begin = date
-        e.duration = datetime.timedelta(hours=12)
+        e.make_all_day()
+        e.url = d['TC_URL']
         c.events.add(e)
 
     print(c.serialize())
@@ -56,7 +56,6 @@ def main():
 
     selected_venue = [
         '深水埗運動場',
-        '深水埗公園',
         '北河街體育館',
         '大角咀體育館(六樓健身室)'
     ]
