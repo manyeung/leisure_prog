@@ -26,7 +26,7 @@ def print_data(d):
     print(sprint_data(d))
 
 
-def create_ics(data):
+def create_ics(file, data):
     c = Calendar()
 
     for d in data:
@@ -45,8 +45,8 @@ def create_ics(data):
         e.url = d['TC_URL']
         c.events.add(e)
 
-    print(c.serialize())
-    with open('my.ics', 'w') as f:
+    # print(c.serialize())
+    with open(file, 'w') as f:
         f.writelines(c.serialize_iter())
 
 
@@ -54,20 +54,26 @@ def main():
     res = requests.get(URL)
     data = res.json()
 
-    selected_venue = [
-        '深水埗運動場',
-        '北河街體育館',
-        '大角咀體育館(六樓健身室)'
-    ]
+    venue_dict = {
+        'ssp_sports_ground.ics': '深水埗運動場',
+        'pei_ho_street_sports_centre.ics': '北河街體育館',
+        'tkt_sports_centre.ics': '大角咀體育館(六樓健身室)'
+    }
+
     selected_act_type = ['器械健體',  '長跑']
 
-    selected_data = [
-        d for d in data
-        if
-        d['TC_VENUE'] in selected_venue and
-        d['TC_ACT_TYPE_NAME'] in selected_act_type]
+    for f in venue_dict:
+        venue = venue_dict[f]
 
-    create_ics(selected_data)
+        selected_data = [
+            d for d in data
+            if
+            d['TC_VENUE'] == venue and
+            d['TC_ACT_TYPE_NAME'] in selected_act_type]
+
+        create_ics(f, selected_data)
+
+    print('OK!')
 
 
 if __name__ == '__main__':
