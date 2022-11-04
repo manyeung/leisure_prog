@@ -1,0 +1,52 @@
+name: Build and Deploy
+on: 
+  schedule:
+    - cron: 0 1 15 * *
+  workflow_dispatch:
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          cache: 'pip' # caching pip dependencies
+      - name: PIP install
+        run: pip install -r requirements.txt
+      - name: Run python
+        run: python run.py
+        
+      - name: List files in the repository
+        run: ls
+        
+      - name: Pack files
+        run: |
+          cp *.ics public
+          ls public
+          
+      - name: Archive page artifacts
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: 'public'
+            
+  Deploy:
+    needs: Build
+    
+    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+    permissions:
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
+
+    # Deploy to the github-pages environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+      
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Pages
+        uses: actions/configure-pages@v2
+      - name: Deploy GitHub Page site
+        id: deployment
+        uses: actions/deploy-pages@v1
