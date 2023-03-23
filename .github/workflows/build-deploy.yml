@@ -23,6 +23,7 @@ jobs:
       - name: Pack files
         run: |
           cp *.ics public
+          cp index.html public
           ls public
           
       - name: Archive page artifacts

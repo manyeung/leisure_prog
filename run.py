@@ -35,8 +35,11 @@ def slugify(s):
     s = re.sub(r'^_+|_+$', '', s)
     return s
 
+def sprint_html(ics, venue, activity):
+    return '<li><a href="%s">%s - %s</a></li>' % (ics, VENUE_DICT[venue], ACTIVITY_DICT[activity])
+
 def print_html(ics, venue, activity):
-    print('<li><a href="%s">%s - %s</a></li>' % (ics, VENUE_DICT[venue], ACTIVITY_DICT[activity]))
+    print(sprint_html(ics, venue, activity))
 
 def create_ics(file, data):
     c = Calendar()
@@ -73,6 +76,11 @@ def main():
     venues = {d['EN_VENUE'] for d in data}
     # print('Total venues: %s' % (len(venues)))
 
+    now = datetime.datetime.now()
+    html = '<html><body>\n'
+    html = html + ('<p>更新時間 %s</p>\n' % (now.strftime('%c UTC')))
+    html = html + '<ul>\n'
+
     for venue in sorted(venues):
         activities = {
             d['EN_ACT_TYPE_NAME'] for d in data
@@ -91,7 +99,12 @@ def main():
             ]
             create_ics(ics, selected_data)
             print('Create ICS: %s' % (ics))
-            # print_html(ics, venue, activity)
+            html = html + sprint_html(ics, venue, activity) + '\n'
+
+    html = html + '</ul></body></html>\n'
+    f = open('index.html', 'w')
+    f.write(html)
+    f.close()
 
     print('OK!')
 
