@@ -1,9 +1,12 @@
 from ics import Calendar, Event
 import requests
 import datetime
+import re
 
 URL = 'https://www.lcsd.gov.hk/datagovhk/event/leisure_prog.json'
 
+VENUE_DICT = {}
+ACTIVITY_DICT = {}
 
 def sprint_data(d):
     attr = [
@@ -25,6 +28,15 @@ def sprint_data(d):
 def print_data(d):
     print(sprint_data(d))
 
+def slugify(s):
+    s = s.lower().strip()
+    s = re.sub(r'[^\w\s-]', '', s)
+    s = re.sub(r'[\s_-]+', '_', s)
+    s = re.sub(r'^_+|_+$', '', s)
+    return s
+
+def print_html(ics, venue, activity):
+    print('<li><a href="%s">%s - %s</a></li>' % (ics, VENUE_DICT[venue], ACTIVITY_DICT[activity]))
 
 def create_ics(file, data):
     c = Calendar()
@@ -54,24 +66,32 @@ def main():
     res = requests.get(URL)
     data = res.json()
 
-    venue_dict = {
-        'ssp_sports_ground.ics': '深水埗運動場',
-        'pei_ho_street_sports_centre.ics': '北河街體育館',
-        'tkt_sports_centre.ics': '大角咀體育館(六樓健身室)'
-    }
+    for d in data:
+        VENUE_DICT[d['EN_VENUE']] = d['TC_VENUE']
+        ACTIVITY_DICT[d['EN_ACT_TYPE_NAME']] = d['TC_ACT_TYPE_NAME']
 
-    selected_act_type = ['器械健體',  '長跑']
+    venues = {d['EN_VENUE'] for d in data}
+    # print('Total venues: %s' % (len(venues)))
 
-    for f in venue_dict:
-        venue = venue_dict[f]
+    for venue in sorted(venues):
+        activities = {
+            d['EN_ACT_TYPE_NAME'] for d in data
+            if 
+            d['EN_VENUE'] == venue
+        }
+        # print('Total activities for %s : %s' % (venue, len(activities)))
 
-        selected_data = [
-            d for d in data
-            if
-            d['TC_VENUE'] == venue and
-            d['TC_ACT_TYPE_NAME'] in selected_act_type]
-
-        create_ics(f, selected_data)
+        for activity in sorted(activities):
+            ics = '%s--%s.ics' % (slugify(venue), slugify(activity))
+            selected_data = [
+                d for d in data
+                if
+                d['EN_VENUE'] == venue and
+                d['EN_ACT_TYPE_NAME'] == activity
+            ]
+            create_ics(ics, selected_data)
+            print('Create ICS: %s' % (ics))
+            # print_html(ics, venue, activity)
 
     print('OK!')
 
