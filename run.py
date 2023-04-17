@@ -23,6 +23,7 @@ def sprint_data(d):
     ]
     val = map(lambda k: d[k],  attr)
     s = ' | '.join(val)
+    s = "%s\n\n%s" % (s, d['TC_URL'])
     return s
 
 
