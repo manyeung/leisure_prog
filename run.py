@@ -2,6 +2,7 @@ from ics import Calendar, Event
 import requests
 import datetime
 import re
+import json
 
 URL = 'https://www.lcsd.gov.hk/datagovhk/event/leisure_prog.json'
 
@@ -67,7 +68,12 @@ def create_ics(file, data):
 
 def main():
     res = requests.get(URL)
-    data = res.json()
+
+    # remove EN_NOTES_1, EN_NOTES_2 from json
+    txt = res.text
+    txt = re.sub(r",\"TC_URL\"", "\n,\"TC_URL\"", txt)
+    txt = re.sub(r",\"EN_NOTES_1\".+$", "", txt, 0, re.MULTILINE)
+    data = json.loads(txt)
 
     for d in data:
         VENUE_DICT[d['EN_VENUE']] = d['TC_VENUE']
