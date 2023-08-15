@@ -97,6 +97,11 @@ def main():
         # print('Total activities for %s : %s' % (venue, len(activities)))
 
         for activity in sorted(activities):
+            slugify_venue = slugify(venue)
+            slugify_activity = slugify(activity)
+            if not slugify_venue or not slugify_activity:
+                continue
+
             ics = '%s--%s.ics' % (slugify(venue), slugify(activity))
             selected_data = [
                 d for d in data
